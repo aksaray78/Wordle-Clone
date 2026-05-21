@@ -5,8 +5,15 @@
 #include <QVBoxLayout>
 #include <QDebug>
 #include <QKeyEvent>
-#include <QMessageBox>
 #include <QPushButton>
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QPushButton>
+#include <QFrame>
+#include <QScrollArea>
+#include <QGraphicsBlurEffect>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -70,17 +77,257 @@ MainWindow::~MainWindow()
 
 void MainWindow::tampilkanTutorial()
 {
-    QMessageBox::information(
-        this,
-        "Tutorial Wordle",
-        "Cara Bermain Wordle:\n\n"
-        "1. Pemain harus menebak kata tersembunyi dalam 6 percobaan.\n"
-        "2. Masukkan kata sesuai jumlah huruf yang ditentukan.\n"
-        "3. Setiap tebakan harus berupa kata yang valid.\n"
-        "4. Tekan Enter untuk mengirim jawaban.\n\n"
-        "Arti Warna Kotak:\n"
-        "- Hijau: huruf benar dan posisinya benar.\n"
-        "- Kuning: huruf ada di dalam kata, tetapi posisinya salah.\n"
-        "- Abu-abu: huruf tidak ada di dalam kata."
+    // efek blur pada background utama
+    QGraphicsBlurEffect *blur = new QGraphicsBlurEffect;
+    blur->setBlurRadius(10);
+    ui->centralwidget->setGraphicsEffect(blur);
+
+    // dialog utama
+    QDialog dialog(this);
+    dialog.setModal(true);
+    dialog.setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
+    dialog.setAttribute(Qt::WA_TranslucentBackground);
+    dialog.resize(this->size());
+
+    dialog.setStyleSheet(
+        "QDialog { background-color: rgba(0, 0, 0, 145); }"
+
+        "#guideCard {"
+        "   background-color: #1b1f2a;"
+        "   border-radius: 22px;"
+        "   border: 2px solid #2f3545;"
+        "}"
+
+        "#mainTitle {"
+        "   color: #f5f5f5;"
+        "   font-size: 30px;"
+        "   font-weight: 900;"
+        "}"
+
+        "#subtitle {"
+        "   color: #bfc7d5;"
+        "   font-size: 15px;"
+        "}"
+
+        "#sectionTitle {"
+        "   color: #ffffff;"
+        "   font-size: 18px;"
+        "   font-weight: 800;"
+        "}"
+
+        "#bodyText {"
+        "   color: #d6dbe5;"
+        "   font-size: 15px;"
+        "}"
+
+        "#closeButton {"
+        "   background-color: #2f3545;"
+        "   color: white;"
+        "   border: none;"
+        "   border-radius: 14px;"
+        "   font-size: 18px;"
+        "   font-weight: bold;"
+        "}"
+
+        "#closeButton:hover {"
+        "   background-color: #444b5f;"
+        "}"
+
+        "#startButton {"
+        "   background-color: #4f8cff;"
+        "   color: white;"
+        "   border: none;"
+        "   border-radius: 12px;"
+        "   padding: 10px 18px;"
+        "   font-size: 15px;"
+        "   font-weight: 700;"
+        "}"
+
+        "#startButton:hover {"
+        "   background-color: #6fa1ff;"
+        "}"
         );
+
+    QVBoxLayout *overlayLayout = new QVBoxLayout(&dialog);
+    overlayLayout->setContentsMargins(35, 25, 35, 25);
+    overlayLayout->addStretch();
+
+    QFrame *card = new QFrame;
+    card->setObjectName("guideCard");
+    card->setFixedSize(760, 560);
+
+    overlayLayout->addWidget(card, 0, Qt::AlignCenter);
+    overlayLayout->addStretch();
+
+    QVBoxLayout *cardLayout = new QVBoxLayout(card);
+    cardLayout->setContentsMargins(30, 24, 30, 24);
+    cardLayout->setSpacing(14);
+
+    // header
+    QHBoxLayout *headerLayout = new QHBoxLayout;
+
+    QVBoxLayout *titleLayout = new QVBoxLayout;
+    QLabel *title = new QLabel("Panduan Bermain");
+    title->setObjectName("mainTitle");
+
+    QLabel *subtitle = new QLabel("Sini gwe tutorin deks.");
+    subtitle->setObjectName("subtitle");
+
+    titleLayout->addWidget(title);
+    titleLayout->addWidget(subtitle);
+
+    QPushButton *closeButton = new QPushButton("×");
+    closeButton->setObjectName("closeButton");
+    closeButton->setFixedSize(38, 38);
+
+    headerLayout->addLayout(titleLayout);
+    headerLayout->addStretch();
+    headerLayout->addWidget(closeButton, 0, Qt::AlignTop);
+
+    cardLayout->addLayout(headerLayout);
+
+    // garis
+    QFrame *line = new QFrame;
+    line->setFrameShape(QFrame::HLine);
+    line->setStyleSheet("background-color: #394050; max-height: 1px;");
+    cardLayout->addWidget(line);
+
+    // isi scroll
+    QScrollArea *scrollArea = new QScrollArea;
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setFrameShape(QFrame::NoFrame);
+    scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scrollArea->setStyleSheet("background: transparent;");
+
+    QWidget *content = new QWidget;
+    QVBoxLayout *contentLayout = new QVBoxLayout(content);
+    contentLayout->setSpacing(16);
+    contentLayout->setContentsMargins(0, 0, 0, 0);
+
+    QLabel *ruleTitle = new QLabel("Misi Utama");
+    ruleTitle->setObjectName("sectionTitle");
+    contentLayout->addWidget(ruleTitle);
+
+    QLabel *rules = new QLabel(
+        "Cara mainnya coba nebak satu kata rahasia sebelum kesempatan habis.<br>"
+        "Setiap tebakan akan diberi petunjuk lewat warna kotak.<br><br>"
+        "<b>Aturan singkat:</b><br>"
+        "• Pemain memiliki maksimal <b>6 percobaan</b>.<br>"
+        "• Kata yang dimasukkan harus sesuai jumlah huruf.<br>"
+        "• Tekan <b>Enter</b> untuk mengirim jawaban.<br>"
+        "• Warna kotak akan membantu menentukan tebakan berikutnya."
+        );
+    rules->setObjectName("bodyText");
+    rules->setWordWrap(true);
+    rules->setTextFormat(Qt::RichText);
+    contentLayout->addWidget(rules);
+
+    QLabel *colorTitle = new QLabel("Kode Warna");
+    colorTitle->setObjectName("sectionTitle");
+    contentLayout->addWidget(colorTitle);
+
+    auto makeColorBox = [](const QString &text, const QString &color, const QString &desc) -> QWidget*
+    {
+        QWidget *row = new QWidget;
+        QHBoxLayout *layout = new QHBoxLayout(row);
+        layout->setContentsMargins(0, 0, 0, 0);
+        layout->setSpacing(14);
+
+        QLabel *box = new QLabel(text);
+        box->setAlignment(Qt::AlignCenter);
+        box->setFixedSize(50, 50);
+        box->setStyleSheet(QString(
+                               "background-color: %1;"
+                               "color: white;"
+                               "border-radius: 10px;"
+                               "font-size: 24px;"
+                               "font-weight: 900;"
+                               ).arg(color));
+
+        QLabel *label = new QLabel(desc);
+        label->setObjectName("bodyText");
+        label->setWordWrap(true);
+        label->setTextFormat(Qt::RichText);
+
+        layout->addWidget(box);
+        layout->addWidget(label);
+        layout->addStretch();
+
+        return row;
+    };
+
+    contentLayout->addWidget(
+        makeColorBox(
+            "A",
+            "#3fa66b",
+            "<b>Hijau</b> berarti huruf benar dan posisinya juga benar."
+            )
+        );
+
+    contentLayout->addWidget(
+        makeColorBox(
+            "B",
+            "#d4a93f",
+            "<b>Kuning</b> berarti huruf ada di kata, tetapi posisinya belum tepat."
+            )
+        );
+
+    contentLayout->addWidget(
+        makeColorBox(
+            "C",
+            "#5b6270",
+            "<b>Abu-abu</b> berarti huruf tidak ada di kata jawaban."
+            )
+        );
+
+    QLabel *tipsTitle = new QLabel("Tips Cepat");
+    tipsTitle->setObjectName("sectionTitle");
+    contentLayout->addWidget(tipsTitle);
+
+    QLabel *tips = new QLabel(
+        "• Mulai dengan kata yang punya huruf berbeda-beda.<br>"
+        "• Jangan ulang huruf abu-abu kalau tidak perlu.<br>"
+        "• Gunakan huruf kuning di posisi lain.<br>"
+        "• Prioritaskan huruf hijau karena posisinya sudah terkunci."
+        );
+    tips->setObjectName("bodyText");
+    tips->setWordWrap(true);
+    tips->setTextFormat(Qt::RichText);
+    contentLayout->addWidget(tips);
+
+    QLabel *difficultyTitle = new QLabel("Mode Difficulty");
+    difficultyTitle->setObjectName("sectionTitle");
+    contentLayout->addWidget(difficultyTitle);
+
+    QLabel *difficulty = new QLabel(
+        "• <b>Normal</b>: 5 huruf, cocok untuk pemula.<br>"
+        "• <b>Hard</b>: 6 huruf, lebih panjang lebih menantang.<br>"
+        "• <b>Extreme</b>: 7 huruf, mikir kids."
+        );
+    difficulty->setObjectName("bodyText");
+    difficulty->setWordWrap(true);
+    difficulty->setTextFormat(Qt::RichText);
+    contentLayout->addWidget(difficulty);
+
+    contentLayout->addStretch();
+
+    scrollArea->setWidget(content);
+    cardLayout->addWidget(scrollArea);
+
+    // footer button
+    QHBoxLayout *footerLayout = new QHBoxLayout;
+    footerLayout->addStretch();
+
+    QPushButton *startButton = new QPushButton("Mengerti");
+    startButton->setObjectName("startButton");
+
+    footerLayout->addWidget(startButton);
+    cardLayout->addLayout(footerLayout);
+
+    connect(closeButton, &QPushButton::clicked, &dialog, &QDialog::accept);
+    connect(startButton, &QPushButton::clicked, &dialog, &QDialog::accept);
+
+    dialog.exec();
+
+    ui->centralwidget->setGraphicsEffect(nullptr);
 }
