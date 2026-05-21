@@ -5,10 +5,15 @@
 #include <QVBoxLayout>
 #include <QDebug>
 #include <QKeyEvent>
+#include <QMessageBox>
+#include <QPushButton>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
+
+    connect(ui->btnTutorial, &QPushButton::clicked,
+            this, &MainWindow::tampilkanTutorial);
 
     QVBoxLayout *layout = new QVBoxLayout(ui->centralwidget);
 
@@ -61,4 +66,21 @@ void MainWindow::processInput(const QString &key) {
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::tampilkanTutorial()
+{
+    QMessageBox::information(
+        this,
+        "Tutorial Wordle",
+        "Cara Bermain Wordle:\n\n"
+        "1. Pemain harus menebak kata tersembunyi dalam 6 percobaan.\n"
+        "2. Masukkan kata sesuai jumlah huruf yang ditentukan.\n"
+        "3. Setiap tebakan harus berupa kata yang valid.\n"
+        "4. Tekan Enter untuk mengirim jawaban.\n\n"
+        "Arti Warna Kotak:\n"
+        "- Hijau: huruf benar dan posisinya benar.\n"
+        "- Kuning: huruf ada di dalam kata, tetapi posisinya salah.\n"
+        "- Abu-abu: huruf tidak ada di dalam kata."
+        );
 }
