@@ -1,10 +1,11 @@
 #include "mainwindow.h"
-#include "./ui_mainwindow.h"
+#include "ui_mainwindow.h"
 #include "keyboard.h"
 #include "wordlegrid.h"
 #include <QVBoxLayout>
 #include <QDebug>
 #include <QKeyEvent>
+#include <QInputDialog>  // ✅ TAMBAH INI
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -12,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QVBoxLayout *layout = new QVBoxLayout(ui->centralwidget);
 
-    layout->addStretch();
+    layout->addSpacing(70);
 
     gameGrid = new WordleGrid(this);
 
@@ -28,6 +29,21 @@ MainWindow::MainWindow(QWidget *parent)
     connect(gameKeyboard, &Keyboard::keyTyped, this, [this](const QString &key){
         processInput(key);
     });
+
+    // ✅ TAMBAH DI SINI (paling bawah constructor)
+    bool ok;
+    QString nama = QInputDialog::getText(this,
+                                         "Selamat Datang!",
+                                         "Masukkan nama kamu:",
+                                         QLineEdit::Normal, "", &ok);
+
+    if (ok && !nama.isEmpty()) {
+        ui->lblSalam->setText("👋 Selamat datang, " + nama + "! Tebak kata hari ini.");
+        ui->lblSalam->setStyleSheet("color: #2e7d32; font-size: 14px; font-weight: bold;");
+    } else {
+        ui->lblSalam->setText("👋 Selamat datang, Pemain Misterius!");
+        ui->lblSalam->setStyleSheet("color: #1565c0; font-size: 14px; font-style: italic;");
+    }
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
@@ -62,3 +78,4 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+

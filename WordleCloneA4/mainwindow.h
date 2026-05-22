@@ -10,6 +10,9 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+// ❌ HAPUS baris ini dari sini:
+// #include "ui_mainwindow.h"
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -23,10 +26,13 @@ protected:
 
 private:
     Ui::MainWindow *ui;
-
     Keyboard *gameKeyboard;
     WordleGrid *gameGrid;
 
     void processInput(const QString &key);
+
+private slots:
+
 };
-#endif
+
+#endif // MAINWINDOW_H
