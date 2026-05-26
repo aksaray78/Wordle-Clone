@@ -2,6 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QString>
 #include <QKeyEvent>
 #include "keyboard.h"
 #include "wordlegrid.h"
@@ -22,14 +26,22 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
 
 private slots:
+    void simpanNamaUser();
     void tampilkanTutorial();
 
 private:
     Ui::MainWindow *ui;
 
+    QLabel *judulGame;
+    QLabel *subJudul;
+    QLineEdit *inputNama;
+    QPushButton *btnOK;
+    QLabel *labelInfo;
+    QString namaPemain;
+
     Keyboard *gameKeyboard;
     WordleGrid *gameGrid;
-
     void processInput(const QString &key);
 };
+
 #endif
