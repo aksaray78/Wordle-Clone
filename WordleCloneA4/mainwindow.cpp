@@ -21,7 +21,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     setWindowTitle("Puzzle Kata");
-    setFixedSize(900, 700);
+    setMinimumSize(900,700);
+
+    setWindowFlags(windowFlags() | Qt::WindowMaximizeButtonHint);
 
     judulGame = new QLabel(this);
     judulGame->setText("PUZZLE KATA");
@@ -67,17 +69,53 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::tampilkanTutorial);
 
     QVBoxLayout *layout = new QVBoxLayout(ui->centralwidget);
-    layout->setContentsMargins(0, 80, 0, 0);
-    layout->addStretch();
+
+    layout->setContentsMargins(20,20,20,20);
+    layout->setSpacing(10);
+
+    layout->addWidget(
+        judulGame,
+        0,
+        Qt::AlignHCenter
+        );
+
+    layout->addWidget(
+        labelInfo,
+        0,
+        Qt::AlignHCenter
+        );
+
+    layout->addSpacing(20);
+
+    QWidget *middleArea = new QWidget;
+
+    QVBoxLayout *middleLayout =
+        new QVBoxLayout(middleArea);
+
+    middleLayout->addStretch();
 
     gameGrid = new WordleGrid(this);
-    layout->addWidget(gameGrid, 0, Qt::AlignCenter);
 
-    layout->addStretch();
+    middleLayout->addWidget(
+        gameGrid,
+        0,
+        Qt::AlignCenter
+        );
+
+    middleLayout->addStretch();
+
+    layout->addWidget(
+        middleArea,
+        1
+        );
 
     gameKeyboard = new Keyboard(this);
-    layout->addWidget(gameKeyboard);
-    layout->addSpacing(20);
+
+    layout->addWidget(
+        gameKeyboard,
+        0,
+        Qt::AlignBottom
+        );
 
     connect(gameKeyboard, &Keyboard::keyTyped, this, [this](const QString &key){
         processInput(key);
