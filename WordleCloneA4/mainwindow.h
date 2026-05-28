@@ -42,6 +42,9 @@ private:
     Keyboard *gameKeyboard;
     WordleGrid *gameGrid;
     void processInput(const QString &key);
+
+private slots:
+
 };
 
-#endif
+#endif // MAINWINDOW_H
