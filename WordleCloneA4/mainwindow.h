@@ -24,6 +24,9 @@ public:
 protected:
     void keyPressEvent(QKeyEvent *event) override;
 
+private slots:
+    void tampilkanTutorial();
+
 private:
     Ui::MainWindow *ui;
     Keyboard *gameKeyboard;
