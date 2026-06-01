@@ -15,7 +15,6 @@ qt_add_executable(WordleCloneA4
     keyboard.cpp
     wordlegrid.cpp
     wordlegrid.h
-    wordlegrid.h wordlegrid.cpp
 )
 
 target_link_libraries(WordleCloneA4
@@ -36,3 +35,6 @@ qt_generate_deploy_app_script(
     NO_UNSUPPORTED_PLATFORM_ERROR
 )
 install(SCRIPT ${deploy_script})
+
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/words"
+     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")

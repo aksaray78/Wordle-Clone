@@ -13,6 +13,10 @@ public:
 
     void insertLetter(const QString &letter);
     void removeLetter();
+    void colorCell(int col, const QString &colorHex);
+    void moveToNextRow();
+    void clearGrid();
+    void glowRowRed();
 
 private:
     QGridLayout *gridLayout;

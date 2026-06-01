@@ -7,6 +7,7 @@
 #include <QPushButton>
 #include <QString>
 #include <QKeyEvent>
+#include <QStringList>
 #include "keyboard.h"
 #include "wordlegrid.h"
 
@@ -43,8 +44,17 @@ private:
     WordleGrid *gameGrid;
     void processInput(const QString &key);
 
-private slots:
+    QStringList targetWordsList;
+    QStringList validWordsList;
+    QString targetWord;
+    int currentAttempt = 0;
+    int currentLetterIndex = 0;
+    QString currentGuess = "";
 
+    void loadWordLists();
+    void startNewGame();
+    void checkGuess();
+    void resetGame();
 };
 
 #endif // MAINWINDOW_H
