@@ -29,7 +29,7 @@ protected:
 private slots:
     void simpanNamaUser();
     void tampilkanTutorial();
-    void ubahDifficulty(int index);
+    void tampilkanSettings();
 
 private:
     Ui::MainWindow *ui;
@@ -56,6 +56,15 @@ private:
     void startNewGame();
     void checkGuess();
     void resetGame();
+    bool cekHardMode(const QString &guess, QString &pesanError);
+
+    bool hardMode = false;
+    bool darkTheme = true;
+    QString lockedPattern = "_____";
+    QString requiredLetters = "";
+
+    bool gameSudahMulai() const;
+    void applyTheme();
 };
 
 #endif // MAINWINDOW_H

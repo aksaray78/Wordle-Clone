@@ -8,19 +8,15 @@ WordleGrid::WordleGrid(QWidget *parent) : QWidget(parent) {
     createGrid();
 }
 
-void WordleGrid::clearGrid() {
+void WordleGrid::createGrid() {
     while (QLayoutItem *item = gridLayout->takeAt(0)) {
         if (QWidget *widget = item->widget()) {
-            widget->deleteLater();
+            delete widget;
         }
         delete item;
     }
 
     cells.clear();
-}
-
-void WordleGrid::createGrid() {
-    clearGrid();
 
     currentRow = 0;
     currentCol = 0;
@@ -36,9 +32,11 @@ void WordleGrid::createGrid() {
             label->setAlignment(Qt::AlignCenter);
             label->setStyleSheet(
                 "border: 2px solid #3a3a3c;"
-                "font-size: 30px;"
-                "font-weight: bold;"
+                "background-color: transparent;"
+                "border-radius: 6px;"
                 "color: white;"
+                "font-size: 24px;"
+                "font-weight: bold;"
                 );
 
             gridLayout->addWidget(label, r, c);
@@ -57,37 +55,64 @@ void WordleGrid::setWordLength(int length) {
 }
 
 void WordleGrid::insertLetter(const QString &letter) {
-    if (currentCol < wordLength && currentRow < maxRows) {
-        cells[currentRow][currentCol]->setText(letter);
+    if (currentRow >= 0 && currentRow < cells.size()
+        && currentCol >= 0 && currentCol < cells[currentRow].size()) {
+
+        QLabel *label = cells[currentRow][currentCol];
+        if (label) {
+            label->setText(letter);
+        }
+
         currentCol++;
     }
 }
 
 void WordleGrid::removeLetter() {
-    if (currentCol > 0) {
+    if (currentRow >= 0 && currentRow < cells.size() && currentCol > 0) {
         currentCol--;
 
-        QLabel* label = cells[currentRow][currentCol];
+        QLabel *label = cells[currentRow][currentCol];
         if (label) {
             label->setText("");
-
             label->setStyleSheet(
                 "border: 2px solid #3a3a3c;"
                 "background-color: transparent;"
                 "border-radius: 6px;"
-
                 "color: white;"
                 "font-size: 24px;"
                 "font-weight: bold;"
-                "qproperty-alignment: AlignCenter;"
                 );
         }
     }
 }
 
+void WordleGrid::clearGrid() {
+    currentRow = 0;
+    currentCol = 0;
+
+    for (int row = 0; row < cells.size(); ++row) {
+        for (int col = 0; col < cells[row].size(); ++col) {
+            QLabel *label = cells[row][col];
+            if (label) {
+                label->clear();
+                label->setStyleSheet(
+                    "border: 2px solid #3a3a3c;"
+                    "background-color: transparent;"
+                    "border-radius: 6px;"
+                    "color: white;"
+                    "font-size: 24px;"
+                    "font-weight: bold;"
+                    );
+            }
+        }
+    }
+}
+
 void WordleGrid::colorCell(int col, const QString &colorHex) {
-    if (currentRow >= 0 && currentRow < cells.size() && col >= 0 && col < 5) {
-        QLabel* label = cells[currentRow][col];
+    if (currentRow >= 0 && currentRow < cells.size()
+        && col >= 0 && col < cells[currentRow].size()) {
+
+        QLabel *label = cells[currentRow][col];
         if (label) {
             label->setStyleSheet(QString(
                                      "background-color: %1;"
@@ -102,35 +127,16 @@ void WordleGrid::colorCell(int col, const QString &colorHex) {
 }
 
 void WordleGrid::moveToNextRow() {
-    currentRow++;
-    currentCol = 0;
-}
-
-void WordleGrid::clearGrid() {
-    currentRow = 0;
-    currentCol = 0;
-
-    for (int row = 0; row < cells.size(); ++row) {
-        for (int col = 0; col < cells[row].size(); ++col) {
-            QLabel* label = cells[row][col];
-            if (label) {
-                label->clear();
-                label->setStyleSheet(
-                    "border: 2px solid #3a3a3c;"
-                    "color: white;"
-                    "font-size: 24px;"
-                    "font-weight: bold;"
-                    "border-radius: 6px;"
-                    "background-color: transparent;"
-                    );
-            }
-        }
+    if (currentRow < cells.size() - 1) {
+        currentRow++;
+        currentCol = 0;
     }
 }
+
 void WordleGrid::glowRowRed() {
     if (currentRow >= 0 && currentRow < cells.size()) {
-        for (int col = 0; col < 5; ++col) {
-            QLabel* label = cells[currentRow][col];
+        for (int col = 0; col < cells[currentRow].size(); ++col) {
+            QLabel *label = cells[currentRow][col];
             if (label) {
                 label->setStyleSheet(
                     "background-color: #a62b2b;"
