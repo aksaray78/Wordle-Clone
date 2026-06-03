@@ -20,11 +20,21 @@
       <x>0</x>
       <y>0</y>
       <width>90</width>
-      <height>29</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
      <string>?</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboDifficulty">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>0</y>
+      <width>91</width>
+      <height>31</height>
+     </rect>
     </property>
    </widget>
   </widget>

@@ -21,6 +21,7 @@
 #include <QFrame>
 #include <QScrollArea>
 #include <QGraphicsBlurEffect>
+#include <QComboBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -80,6 +81,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->btnTutorial, &QPushButton::clicked,
             this, &MainWindow::tampilkanTutorial);
+
+    ui->comboDifficulty->clear();
+    ui->comboDifficulty->addItem("Normal");
+    ui->comboDifficulty->addItem("Hard");
+    ui->comboDifficulty->addItem("Extreme");
+
+    connect(ui->comboDifficulty, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &MainWindow::ubahDifficulty);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(ui->centralwidget);
     mainLayout->setContentsMargins(30, 20, 30, 0);
@@ -348,6 +357,25 @@ void MainWindow::tampilkanTutorial()
 
     dialog.exec();
     ui->centralwidget->setGraphicsEffect(nullptr);
+}
+
+void MainWindow::ubahDifficulty(int index)
+{
+    int jumlahHuruf = 5;
+
+    if (index == 0) {
+        jumlahHuruf = 5;
+    } else if (index == 1) {
+        jumlahHuruf = 6;
+    } else if (index == 2) {
+        jumlahHuruf = 7;
+    }
+
+    if (gameGrid) {
+        gameGrid->setWordLength(jumlahHuruf);
+    }
+
+    qDebug() << "Difficulty diubah. Jumlah huruf:" << jumlahHuruf;
 }
 
 void MainWindow::loadWordLists() {

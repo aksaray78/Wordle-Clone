@@ -29,6 +29,7 @@ protected:
 private slots:
     void simpanNamaUser();
     void tampilkanTutorial();
+    void ubahDifficulty(int index);
 
 private:
     Ui::MainWindow *ui;
