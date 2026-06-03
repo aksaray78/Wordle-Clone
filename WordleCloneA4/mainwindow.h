@@ -23,6 +23,7 @@ protected:
 
 private slots:
     void tampilkanTutorial();
+    void ubahDifficulty(int index);
 
 private:
     Ui::MainWindow *ui;

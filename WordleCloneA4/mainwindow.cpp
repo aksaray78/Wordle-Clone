@@ -14,6 +14,7 @@
 #include <QFrame>
 #include <QScrollArea>
 #include <QGraphicsBlurEffect>
+#include <QComboBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -21,6 +22,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->btnTutorial, &QPushButton::clicked,
             this, &MainWindow::tampilkanTutorial);
+
+    ui->comboDifficulty->clear();
+    ui->comboDifficulty->addItem("Normal");
+    ui->comboDifficulty->addItem("Hard");
+    ui->comboDifficulty->addItem("Extreme");
+
+    connect(ui->comboDifficulty, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &MainWindow::ubahDifficulty);
 
     QVBoxLayout *layout = new QVBoxLayout(ui->centralwidget);
 
@@ -77,12 +86,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::tampilkanTutorial()
 {
-    // efek blur pada background utama
     QGraphicsBlurEffect *blur = new QGraphicsBlurEffect;
     blur->setBlurRadius(10);
     ui->centralwidget->setGraphicsEffect(blur);
 
-    // dialog utama
     QDialog dialog(this);
     dialog.setModal(true);
     dialog.setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
@@ -163,7 +170,6 @@ void MainWindow::tampilkanTutorial()
     cardLayout->setContentsMargins(30, 24, 30, 24);
     cardLayout->setSpacing(14);
 
-    // header
     QHBoxLayout *headerLayout = new QHBoxLayout;
 
     QVBoxLayout *titleLayout = new QVBoxLayout;
@@ -186,13 +192,12 @@ void MainWindow::tampilkanTutorial()
 
     cardLayout->addLayout(headerLayout);
 
-    // garis
+
     QFrame *line = new QFrame;
     line->setFrameShape(QFrame::HLine);
     line->setStyleSheet("background-color: #394050; max-height: 1px;");
     cardLayout->addWidget(line);
 
-    // isi scroll
     QScrollArea *scrollArea = new QScrollArea;
     scrollArea->setWidgetResizable(true);
     scrollArea->setFrameShape(QFrame::NoFrame);
@@ -314,7 +319,6 @@ void MainWindow::tampilkanTutorial()
     scrollArea->setWidget(content);
     cardLayout->addWidget(scrollArea);
 
-    // footer button
     QHBoxLayout *footerLayout = new QHBoxLayout;
     footerLayout->addStretch();
 
@@ -330,4 +334,23 @@ void MainWindow::tampilkanTutorial()
     dialog.exec();
 
     ui->centralwidget->setGraphicsEffect(nullptr);
+}
+
+void MainWindow::ubahDifficulty(int index)
+{
+    int jumlahHuruf = 5;
+
+    if (index == 0) {
+        jumlahHuruf = 5;
+    } else if (index == 1) {
+        jumlahHuruf = 6;
+    } else if (index == 2) {
+        jumlahHuruf = 7;
+    }
+
+    if (gameGrid) {
+        gameGrid->setWordLength(jumlahHuruf);
+    }
+
+    qDebug() << "Difficulty diubah. Jumlah huruf:" << jumlahHuruf;
 }
