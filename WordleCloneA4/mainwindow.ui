@@ -27,14 +27,17 @@
      <string>?</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="comboDifficulty">
+   <widget class="QPushButton" name="btnSettings">
     <property name="geometry">
      <rect>
-      <x>90</x>
+      <x>1440</x>
       <y>0</y>
-      <width>91</width>
-      <height>31</height>
+      <width>90</width>
+      <height>29</height>
      </rect>
+    </property>
+    <property name="text">
+     <string>⚙</string>
     </property>
    </widget>
   </widget>

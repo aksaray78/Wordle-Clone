@@ -26,6 +26,8 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
+    setFocusPolicy(Qt::StrongFocus);
+    setFocus();
 
     setWindowTitle("char4char");
     setMinimumSize(550,750);
@@ -82,13 +84,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->btnTutorial, &QPushButton::clicked,
             this, &MainWindow::tampilkanTutorial);
 
-    ui->comboDifficulty->clear();
-    ui->comboDifficulty->addItem("Normal");
-    ui->comboDifficulty->addItem("Hard");
-    ui->comboDifficulty->addItem("Extreme");
-
-    connect(ui->comboDifficulty, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &MainWindow::ubahDifficulty);
+    connect(ui->btnSettings, &QPushButton::clicked,
+            this, &MainWindow::tampilkanSettings);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(ui->centralwidget);
     mainLayout->setContentsMargins(30, 20, 30, 0);
@@ -115,6 +112,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     loadWordLists();
     startNewGame();
+    applyTheme();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
@@ -147,6 +145,24 @@ void MainWindow::processInput(const QString &key) {
         if (currentGuess.length() < 5) {
             QMessageBox::warning(this, "Kata Belum Lengkap",
                                  "Kata belum lengkap! Pastikan kotak terisi 5 huruf.");
+            return;
+        }
+
+        QString pesanHardMode;
+        if (!cekHardMode(currentGuess.toUpper(), pesanHardMode)) {
+            gameGrid->glowRowRed();
+
+            QMessageBox::warning(this, "Hard Mode", pesanHardMode);
+
+            for (int i = 0; i < currentGuess.length(); ++i) {
+                gameGrid->removeLetter();
+            }
+
+            currentGuess = "";
+            currentLetterIndex = 0;
+
+            setFocus();
+
             return;
         }
 
@@ -184,6 +200,40 @@ void MainWindow::simpanNamaUser() {}
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+bool MainWindow::gameSudahMulai() const
+{
+    return currentAttempt > 0 || !currentGuess.isEmpty();
+}
+
+void MainWindow::applyTheme()
+{
+    if (darkTheme) {
+        this->setStyleSheet(
+            "QMainWindow { background-color: #121213; }"
+            "QWidget#centralwidget { background-color: #121213; }"
+            "QLabel { color: white; }"
+            "QPushButton { background-color: #3a3a3c; color: white; border-radius: 6px; }"
+            "QPushButton:hover { background-color: #565758; }"
+            );
+
+        if (labelInfo) {
+            labelInfo->setStyleSheet("color: #4f8cff; font-size: 14px; font-weight: 500;");
+        }
+    } else {
+        this->setStyleSheet(
+            "QMainWindow { background-color: #f5f5f5; }"
+            "QWidget#centralwidget { background-color: #f5f5f5; }"
+            "QLabel { color: #121213; }"
+            "QPushButton { background-color: #d3d6da; color: #121213; border-radius: 6px; }"
+            "QPushButton:hover { background-color: #bfc2c6; }"
+            );
+
+        if (labelInfo) {
+            labelInfo->setStyleSheet("color: #1a73e8; font-size: 14px; font-weight: 500;");
+        }
+    }
 }
 
 void MainWindow::tampilkanTutorial()
@@ -263,13 +313,15 @@ void MainWindow::tampilkanTutorial()
     contentLayout->addWidget(ruleTitle);
 
     QLabel *rules = new QLabel(
-        "Cara mainnya coba nebak satu kata rahasia sebelum kesempatan habis.<br>"
-        "Setiap tebakan akan diberi petunjuk lewat warna kotak.<br><br>"
-        "<b>Aturan singkat:</b><br>"
-        "• Pemain memiliki maksimal <b>6 percobaan</b>.<br>"
-        "• Kata yang dimasukkan harus sesuai jumlah huruf.<br>"
-        "• Tekan <b>Enter</b> untuk mengirim jawaban.<br>"
-        "• Warna kotak akan membantu menentukan tebakan berikutnya."
+        "Tugas pemain adalah menebak kata rahasia dalam <b>6 percobaan</b>.<br>"
+        "Setiap tebakan harus berupa kata valid dan berjumlah <b>5 huruf</b>.<br><br>"
+        "<b>Aturan warna:</b><br>"
+        "• Hijau: huruf benar dan posisinya benar.<br>"
+        "• Kuning: huruf ada di kata, tetapi posisinya salah.<br>"
+        "• Abu-abu: huruf tidak ada di kata jawaban.<br><br>"
+        "<b>Mode permainan:</b><br>"
+        "• Normal Mode: pemain bebas menebak kata valid apa saja.<br>"
+        "• Hard Mode: petunjuk hijau dan kuning wajib digunakan pada tebakan berikutnya."
         );
     rules->setObjectName("bodyText");
     rules->setWordWrap(true);
@@ -332,9 +384,8 @@ void MainWindow::tampilkanTutorial()
     difficultyTitle->setObjectName("sectionTitle");
     contentLayout->addWidget(difficultyTitle);
     QLabel *difficulty = new QLabel(
-        "• <b>Normal</b>: 5 huruf, cocok untuk pemula.<br>"
-        "• <b>Hard</b>: 6 huruf, lebih panjang lebih menantang.<br>"
-        "• <b>Extreme</b>: 7 huruf, mikir kids."
+        "• <b>Hard Mode</b>: hanya bisa diubah sebelum pemain mulai mengetik.<br>"
+        "• Setelah permainan dimulai, Hard Mode dikunci agar aturan tidak berubah di tengah game."
         );
     difficulty->setObjectName("bodyText");
     difficulty->setWordWrap(true);
@@ -359,23 +410,150 @@ void MainWindow::tampilkanTutorial()
     ui->centralwidget->setGraphicsEffect(nullptr);
 }
 
-void MainWindow::ubahDifficulty(int index)
+void MainWindow::tampilkanSettings()
 {
-    int jumlahHuruf = 5;
+    QDialog dialog(this);
+    dialog.setModal(true);
+    dialog.setWindowTitle("Settings");
+    dialog.setFixedSize(460, 300);
+    dialog.setStyleSheet(
+        "QDialog { background-color: #121213; color: white; }"
+        "QLabel { color: white; }"
+        "QPushButton { background-color: #3a3a3c; color: white; border-radius: 8px; padding: 8px; }"
+        "QPushButton:hover { background-color: #565758; }"
+        );
 
-    if (index == 0) {
-        jumlahHuruf = 5;
-    } else if (index == 1) {
-        jumlahHuruf = 6;
-    } else if (index == 2) {
-        jumlahHuruf = 7;
+    QVBoxLayout *mainLayout = new QVBoxLayout(&dialog);
+    mainLayout->setContentsMargins(22, 18, 22, 18);
+    mainLayout->setSpacing(14);
+
+    QLabel *title = new QLabel("SETTINGS");
+    title->setAlignment(Qt::AlignCenter);
+    title->setStyleSheet("font-size: 22px; font-weight: bold;");
+    mainLayout->addWidget(title);
+
+    bool gameMulai = gameSudahMulai();
+
+    QLabel *hardTitle = new QLabel("Hard Mode");
+    hardTitle->setStyleSheet("font-size: 18px; font-weight: bold;");
+
+    QLabel *hardDesc = new QLabel(
+        gameMulai
+            ? "Hard Mode hanya bisa diubah sebelum pemain mulai mengetik."
+            : "Petunjuk hijau dan kuning wajib dipakai pada tebakan berikutnya."
+        );
+    hardDesc->setWordWrap(true);
+    hardDesc->setStyleSheet("color: #d7dadc; font-size: 13px;");
+
+    QPushButton *btnHardMode = new QPushButton(hardMode ? "Hard Mode: ON" : "Hard Mode: OFF");
+
+    btnHardMode->setEnabled(!gameMulai);
+    btnHardMode->setStyleSheet(
+        gameMulai
+            ? "background-color: #333333; color: #777777; border-radius: 8px; padding: 8px;"
+            : hardMode
+                  ? "background-color: #3fa66b; color: white; border-radius: 8px; padding: 8px;"
+                  : "background-color: #565758; color: white; border-radius: 8px; padding: 8px;"
+        );
+
+    connect(btnHardMode, &QPushButton::clicked, [&]() {
+        if (gameSudahMulai()) {
+            QMessageBox::warning(
+                this,
+                "Tidak Bisa Diubah",
+                "Hard Mode hanya bisa diubah sebelum kamu mulai mengetik."
+                );
+            return;
+        }
+
+        hardMode = !hardMode;
+
+        btnHardMode->setText(hardMode ? "Hard Mode: ON" : "Hard Mode: OFF");
+        btnHardMode->setStyleSheet(
+            hardMode
+                ? "background-color: #3fa66b; color: white; border-radius: 8px; padding: 8px;"
+                : "background-color: #565758; color: white; border-radius: 8px; padding: 8px;"
+            );
+    });
+
+    QFrame *line1 = new QFrame;
+    line1->setFrameShape(QFrame::HLine);
+    line1->setStyleSheet("background-color: #3a3a3c; max-height: 1px;");
+
+    QLabel *darkTitle = new QLabel("Dark Theme");
+    darkTitle->setStyleSheet("font-size: 18px; font-weight: bold;");
+
+    QLabel *darkDesc = new QLabel("Mengubah tampilan utama game menjadi gelap atau terang.");
+    darkDesc->setWordWrap(true);
+    darkDesc->setStyleSheet("color: #d7dadc; font-size: 13px;");
+
+    QPushButton *btnDarkTheme = new QPushButton(darkTheme ? "Dark Theme: ON" : "Dark Theme: OFF");
+    btnDarkTheme->setStyleSheet(
+        darkTheme
+            ? "background-color: #3fa66b; color: white; border-radius: 8px; padding: 8px;"
+            : "background-color: #565758; color: white; border-radius: 8px; padding: 8px;"
+        );
+
+    connect(btnDarkTheme, &QPushButton::clicked, [&]() {
+        darkTheme = !darkTheme;
+
+        btnDarkTheme->setText(darkTheme ? "Dark Theme: ON" : "Dark Theme: OFF");
+        btnDarkTheme->setStyleSheet(
+            darkTheme
+                ? "background-color: #3fa66b; color: white; border-radius: 8px; padding: 8px;"
+                : "background-color: #565758; color: white; border-radius: 8px; padding: 8px;"
+            );
+
+        applyTheme();
+    });
+
+    QPushButton *btnClose = new QPushButton("Tutup");
+    connect(btnClose, &QPushButton::clicked, &dialog, &QDialog::accept);
+
+    mainLayout->addWidget(hardTitle);
+    mainLayout->addWidget(hardDesc);
+    mainLayout->addWidget(btnHardMode);
+
+    mainLayout->addWidget(line1);
+
+    mainLayout->addWidget(darkTitle);
+    mainLayout->addWidget(darkDesc);
+    mainLayout->addWidget(btnDarkTheme);
+
+    mainLayout->addStretch();
+    mainLayout->addWidget(btnClose);
+
+    dialog.exec();
+
+    setFocus();
+}
+
+bool MainWindow::cekHardMode(const QString &guess, QString &pesanError)
+{
+    if (!hardMode) {
+        return true;
     }
 
-    if (gameGrid) {
-        gameGrid->setWordLength(jumlahHuruf);
+    for (int i = 0; i < lockedPattern.length(); ++i) {
+        if (lockedPattern[i] != '_' && guess[i] != lockedPattern[i]) {
+            pesanError = QString("Hard Mode aktif. Huruf %1 wajib tetap di posisi %2.")
+            .arg(lockedPattern[i])
+                .arg(i + 1);
+            return false;
+        }
     }
 
-    qDebug() << "Difficulty diubah. Jumlah huruf:" << jumlahHuruf;
+    for (int i = 0; i < requiredLetters.length(); ++i) {
+        QChar huruf = requiredLetters.at(i);
+
+        if (!guess.contains(huruf)) {
+            pesanError = QString("Hard Mode aktif. Huruf %1 wajib digunakan lagi.")
+            .arg(huruf);
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void MainWindow::loadWordLists() {
@@ -422,6 +600,8 @@ void MainWindow::startNewGame() {
     currentAttempt = 0;
     currentLetterIndex = 0;
     currentGuess = "";
+    lockedPattern = "_____";
+    requiredLetters = "";
 
     qDebug() << "🎯 Game Dimulai! Kata rahasia game ini adalah:" << targetWord;
 }
@@ -469,9 +649,17 @@ void MainWindow::checkGuess() {
         if (letterStatus[i] == 2) {
             gameGrid->colorCell(i, "#3fa66b");
             gameKeyboard->updateKeyColor(currentLetter, "#3fa66b");
+
+            lockedPattern[i] = guess[i];
+
         } else if (letterStatus[i] == 1) {
             gameGrid->colorCell(i, "#d4a93f");
             gameKeyboard->updateKeyColor(currentLetter, "#d4a93f");
+
+            if (!requiredLetters.contains(guess[i])) {
+                requiredLetters.append(guess[i]);
+            }
+
         } else {
             gameGrid->colorCell(i, "#5b6270");
             gameKeyboard->updateKeyColor(currentLetter, "#5b6270");

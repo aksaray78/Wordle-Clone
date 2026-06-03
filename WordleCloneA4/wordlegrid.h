@@ -15,6 +15,11 @@ public:
     void removeLetter();
     void setWordLength(int length);
 
+    void clearGrid();
+    void colorCell(int col, const QString &colorHex);
+    void moveToNextRow();
+    void glowRowRed();
+
 private:
     QGridLayout *gridLayout;
     QVector<QVector<QLabel*>> cells;
@@ -24,7 +29,6 @@ private:
     int currentCol = 0;
 
     void createGrid();
-    void clearGrid();
 };
 
 #endif
