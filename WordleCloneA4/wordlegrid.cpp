@@ -61,6 +61,14 @@ void WordleGrid::insertLetter(const QString &letter) {
         QLabel *label = cells[currentRow][currentCol];
         if (label) {
             label->setText(letter);
+            label->setStyleSheet(QString(
+                "border: 2px solid %1;"
+                "background-color: transparent;"
+                "border-radius: 6px;"
+                "color: %2;"
+                "font-size: 24px;"
+                "font-weight: bold;"
+            ).arg(m_borderColor, m_textColor));
         }
 
         currentCol++;
@@ -74,14 +82,14 @@ void WordleGrid::removeLetter() {
         QLabel *label = cells[currentRow][currentCol];
         if (label) {
             label->setText("");
-            label->setStyleSheet(
-                "border: 2px solid #3a3a3c;"
+            label->setStyleSheet(QString(
+                "border: 2px solid %1;"
                 "background-color: transparent;"
                 "border-radius: 6px;"
-                "color: white;"
+                "color: %2;"
                 "font-size: 24px;"
                 "font-weight: bold;"
-                );
+            ).arg(m_borderColor, m_textColor));
         }
     }
 }
@@ -95,14 +103,14 @@ void WordleGrid::clearGrid() {
             QLabel *label = cells[row][col];
             if (label) {
                 label->clear();
-                label->setStyleSheet(
+                label->setStyleSheet(QString(
                     "border: 2px solid #3a3a3c;"
                     "background-color: transparent;"
                     "border-radius: 6px;"
                     "color: white;"
                     "font-size: 24px;"
                     "font-weight: bold;"
-                    );
+                ).arg(m_borderColor, m_textColor));
             }
         }
     }
@@ -149,4 +157,27 @@ void WordleGrid::glowRowRed() {
             }
         }
     }
+}
+
+void WordleGrid::updateEmptyCells(const QString &textColor, const QString &borderColor) {
+    for (int row = 0; row < cells.size(); ++row) {
+        for (int col = 0; col < cells[row].size(); ++col) {
+            QLabel *label = cells[row][col];
+            if (label && label->styleSheet().contains("background-color: transparent")) {
+                label->setStyleSheet(QString(
+                    "border: 2px solid %1;"
+                    "background-color: transparent;"
+                    "border-radius: 6px;"
+                    "color: %2;"
+                    "font-size: 24px;"
+                    "font-weight: bold;"
+                ).arg(borderColor, textColor));
+            }
+        }
+    }
+}
+
+void WordleGrid::setThemeColors(const QString &textColor, const QString &borderColor) {
+    m_textColor = textColor;
+    m_borderColor = borderColor;
 }

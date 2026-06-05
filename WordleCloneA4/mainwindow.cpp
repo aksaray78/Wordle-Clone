@@ -6,6 +6,8 @@
 #include <QTextStream>
 #include <QRandomGenerator>
 #include <vector>
+#include <QFileDialog>
+#include <QPixmap>
 #include <QFont>
 #include <QMessageBox>
 #include <QDialog>
@@ -36,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     judulGame = new QLabel(this);
     judulGame->setText("📄char4char");
-    judulGame->setGeometry(280, 25, 340, 40);
+
     QFont fontJudul("Segoe UI", 28, QFont::Bold);
     judulGame->setFont(fontJudul);
     judulGame->setAlignment(Qt::AlignCenter);
@@ -81,17 +83,37 @@ MainWindow::MainWindow(QWidget *parent)
 
     delete dialogNama;
 
-    connect(ui->btnTutorial, &QPushButton::clicked,
-            this, &MainWindow::tampilkanTutorial);
+    QPushButton *btnTutorial = new QPushButton("?");
+    btnTutorial->setFixedSize(40, 40);
 
-    connect(ui->btnSettings, &QPushButton::clicked,
-            this, &MainWindow::tampilkanSettings);
+    QPushButton *btnSettings = new QPushButton("⚙");
+    btnSettings->setFixedSize(40, 40);
+
+    connect(btnTutorial, &QPushButton::clicked, this, &MainWindow::tampilkanTutorial);
+    connect(btnSettings, &QPushButton::clicked, this, &MainWindow::tampilkanSettings);
+
+    QHBoxLayout *topBar = new QHBoxLayout();
+    topBar->setContentsMargins(0, 0, 0, 0);
+    topBar->addWidget(btnTutorial, 0, Qt::AlignLeft);
+    topBar->addStretch();
+    topBar->addWidget(btnSettings, 0, Qt::AlignRight);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(ui->centralwidget);
-    mainLayout->setContentsMargins(30, 20, 30, 0);
+    mainLayout->setContentsMargins(30, 10, 30, 0);
     mainLayout->setSpacing(0);
 
-    mainLayout->addWidget(judulGame, 0, Qt::AlignHCenter);
+    QPushButton *btnStatistik = new QPushButton("📊");
+    btnStatistik->setFixedSize(40, 40);
+    connect(btnStatistik, &QPushButton::clicked, this, &MainWindow::tampilkanStatistik);
+
+    QHBoxLayout *headerRow = new QHBoxLayout();
+    headerRow->addWidget(btnTutorial, 0, Qt::AlignLeft | Qt::AlignTop);
+    headerRow->addWidget(judulGame, 1, Qt::AlignHCenter | Qt::AlignTop);
+    headerRow->addWidget(btnStatistik, 0, Qt::AlignRight | Qt::AlignTop);
+    headerRow->addSpacing(8);
+    headerRow->addWidget(btnSettings, 0, Qt::AlignRight | Qt::AlignTop);
+
+    mainLayout->addLayout(headerRow);
 
     mainLayout->addSpacing(15);
     mainLayout->addWidget(labelInfo, 0, Qt::AlignHCenter);
@@ -213,26 +235,26 @@ void MainWindow::applyTheme()
         this->setStyleSheet(
             "QMainWindow { background-color: #121213; }"
             "QWidget#centralwidget { background-color: #121213; }"
-            "QLabel { color: white; }"
             "QPushButton { background-color: #3a3a3c; color: white; border-radius: 6px; }"
             "QPushButton:hover { background-color: #565758; }"
             );
-
-        if (labelInfo) {
-            labelInfo->setStyleSheet("color: #4f8cff; font-size: 14px; font-weight: 500;");
-        }
+        if (labelInfo) labelInfo->setStyleSheet("color: #4f8cff; font-size: 14px; font-weight: 500;");
+        if (judulGame) judulGame->setStyleSheet("color: white;");
+        if (gameGrid)
+            gameGrid->setThemeColors("white", "#3a3a3c");
+            gameGrid->updateEmptyCells("#ffffff", "#3a3a3c");
     } else {
         this->setStyleSheet(
             "QMainWindow { background-color: #f5f5f5; }"
             "QWidget#centralwidget { background-color: #f5f5f5; }"
-            "QLabel { color: #121213; }"
             "QPushButton { background-color: #d3d6da; color: #121213; border-radius: 6px; }"
             "QPushButton:hover { background-color: #bfc2c6; }"
             );
-
-        if (labelInfo) {
-            labelInfo->setStyleSheet("color: #1a73e8; font-size: 14px; font-weight: 500;");
-        }
+        if (labelInfo) labelInfo->setStyleSheet("color: #1a73e8; font-size: 14px; font-weight: 500;");
+        if (judulGame) judulGame->setStyleSheet("color: #121213;");
+        if (gameGrid)
+            gameGrid->setThemeColors("#121213", "#878a8c");
+            gameGrid->updateEmptyCells("#121213", "#878a8c");
     }
 }
 
@@ -257,8 +279,8 @@ void MainWindow::tampilkanTutorial()
         "#bodyText { color: #d6dbe5; font-size: 15px; }"
         "#closeButton { background-color: #2f3545; color: white; border: none; border-radius: 14px; font-size: 18px; font-weight: bold; }"
         "#closeButton:hover { background-color: #444b5f; }"
-        "#startButton { background-color: #4f8cff; color: white; border: none; border-radius: 12px; padding: 10px 18px; font-size: 15px; font-weight: 700; }"
-        "#startButton:hover { background-color: #6fa1ff; }"
+        "#startButton { background-color: #565758; color: white; border: none; border-radius: 12px; padding: 10px 18px; font-size: 15px; font-weight: 700; }"
+        "#startButton:hover { background-color: #4f8cff; }"
         );
 
     QVBoxLayout *overlayLayout = new QVBoxLayout(&dialog);
@@ -452,7 +474,7 @@ void MainWindow::tampilkanSettings()
         gameMulai
             ? "background-color: #333333; color: #777777; border-radius: 8px; padding: 8px;"
             : hardMode
-                  ? "background-color: #3fa66b; color: white; border-radius: 8px; padding: 8px;"
+                  ? "background-color: #4f8cff; color: white; border-radius: 8px; padding: 8px;"
                   : "background-color: #565758; color: white; border-radius: 8px; padding: 8px;"
         );
 
@@ -471,7 +493,7 @@ void MainWindow::tampilkanSettings()
         btnHardMode->setText(hardMode ? "Hard Mode: ON" : "Hard Mode: OFF");
         btnHardMode->setStyleSheet(
             hardMode
-                ? "background-color: #3fa66b; color: white; border-radius: 8px; padding: 8px;"
+                ? "background-color: #4f8cff; color: white; border-radius: 8px; padding: 8px;"
                 : "background-color: #565758; color: white; border-radius: 8px; padding: 8px;"
             );
     });
@@ -490,7 +512,7 @@ void MainWindow::tampilkanSettings()
     QPushButton *btnDarkTheme = new QPushButton(darkTheme ? "Dark Theme: ON" : "Dark Theme: OFF");
     btnDarkTheme->setStyleSheet(
         darkTheme
-            ? "background-color: #3fa66b; color: white; border-radius: 8px; padding: 8px;"
+            ? "background-color: #4f8cff; color: white; border-radius: 8px; padding: 8px;"
             : "background-color: #565758; color: white; border-radius: 8px; padding: 8px;"
         );
 
@@ -500,7 +522,7 @@ void MainWindow::tampilkanSettings()
         btnDarkTheme->setText(darkTheme ? "Dark Theme: ON" : "Dark Theme: OFF");
         btnDarkTheme->setStyleSheet(
             darkTheme
-                ? "background-color: #3fa66b; color: white; border-radius: 8px; padding: 8px;"
+                ? "background-color: #4f8cff; color: white; border-radius: 8px; padding: 8px;"
                 : "background-color: #565758; color: white; border-radius: 8px; padding: 8px;"
             );
 
@@ -508,6 +530,11 @@ void MainWindow::tampilkanSettings()
     });
 
     QPushButton *btnClose = new QPushButton("Tutup");
+    btnClose->setStyleSheet(
+        "QPushButton { background-color: #3a3a3c; color: white; border-radius: 8px; padding: 8px; }"
+        "QPushButton:hover { background-color: #4f8cff; color: white; }"
+    );
+
     connect(btnClose, &QPushButton::clicked, &dialog, &QDialog::accept);
 
     mainLayout->addWidget(hardTitle);
@@ -603,7 +630,7 @@ void MainWindow::startNewGame() {
     lockedPattern = "_____";
     requiredLetters = "";
 
-    qDebug() << "🎯 Game Dimulai! Kata rahasia game ini adalah:" << targetWord;
+    qDebug() << "Game Dimulai! Kata rahasia game ini adalah:" << targetWord;
 }
 
 void MainWindow::resetGame() {
@@ -615,7 +642,7 @@ void MainWindow::resetGame() {
 
     startNewGame();
 
-    labelInfo->setText("🎉 Main lagi! Tebak kata baru.");
+    labelInfo->setText("Main lagi! Tebak kata baru.");
 }
 
 void MainWindow::checkGuess() {
@@ -668,7 +695,7 @@ void MainWindow::checkGuess() {
 
     if (guess == target) {
         QDialog *winDialog = new QDialog(this);
-        winDialog->setWindowTitle("🎉 KAMU MENANG! 🎉");
+        winDialog->setWindowTitle("KAMU MENANG!");
         winDialog->setFixedSize(350, 180);
         winDialog->setStyleSheet("background-color: #1b1f2a; color: white; border-radius: 10px;");
 
@@ -682,7 +709,10 @@ void MainWindow::checkGuess() {
         winLabel->setAlignment(Qt::AlignCenter);
 
         QPushButton *btnMainLagi = new QPushButton("Main Lagi");
-        btnMainLagi->setStyleSheet("background-color: #3fa66b; color: white; padding: 10px; font-weight: bold; border-radius: 5px;");
+        btnMainLagi->setStyleSheet(
+            "QPushButton { background-color: #3a3a3c; color: white; padding: 10px; font-weight: bold; border-radius: 5px; }"
+            "QPushButton:hover { background-color: #4f8cff; }"
+        );
         connect(btnMainLagi, &QPushButton::clicked, winDialog, &QDialog::accept);
 
         layout->addWidget(winLabel);
@@ -690,6 +720,12 @@ void MainWindow::checkGuess() {
 
         winDialog->exec();
         delete winDialog;
+
+        statPlayed++;
+        statWins++;
+        statCurrentStreak++;
+        if (statCurrentStreak > statMaxStreak) statMaxStreak = statCurrentStreak;
+        statGuessDistribution[currentAttempt]++;
 
         resetGame();
         return;
@@ -724,7 +760,147 @@ void MainWindow::checkGuess() {
         loseDialog->exec();
         delete loseDialog;
 
+        statPlayed++;
+        statCurrentStreak = 0;
+
         resetGame();
         return;
     }
+}
+
+void MainWindow::tampilkanStatistik()
+{
+    if (statPlayed == 0) {
+        QMessageBox::information(this, "Belum Ada Data", "Lakukan tebakan pertama!");
+        return;
+    }
+    QDialog dialog(this);
+    dialog.setModal(true);
+    dialog.setWindowTitle("Statistik");
+    dialog.setFixedSize(400, 280);
+    dialog.setStyleSheet(
+        "QDialog { background-color: #121213; color: white; }"
+        "QLabel { color: white; }"
+        "QPushButton { background-color: #3a3a3c; color: white; border-radius: 8px; padding: 8px; }"
+        "QPushButton:hover { background-color: #4f8cff; }"
+        );
+
+    QVBoxLayout *mainLayout = new QVBoxLayout(&dialog);
+    mainLayout->setContentsMargins(24, 20, 24, 20);
+    mainLayout->setSpacing(16);
+
+    QLabel *title = new QLabel("STATISTIK");
+    title->setAlignment(Qt::AlignCenter);
+    title->setStyleSheet("font-size: 20px; font-weight: bold;");
+    mainLayout->addWidget(title);
+
+    QHBoxLayout *statsRow = new QHBoxLayout();
+    statsRow->setSpacing(10);
+
+    auto makeStat = [](const QString &value, const QString &label) -> QWidget* {
+        QWidget *w = new QWidget;
+        QVBoxLayout *l = new QVBoxLayout(w);
+        l->setContentsMargins(0, 0, 0, 0);
+        l->setSpacing(2);
+
+        QLabel *val = new QLabel(value);
+        val->setAlignment(Qt::AlignCenter);
+        val->setStyleSheet("font-size: 28px; font-weight: bold; color: white;");
+
+        QLabel *lbl = new QLabel(label);
+        lbl->setAlignment(Qt::AlignCenter);
+        lbl->setWordWrap(true);
+        lbl->setStyleSheet("font-size: 11px; color: #d7dadc;");
+
+        l->addWidget(val);
+        l->addWidget(lbl);
+        return w;
+    };
+
+    int winPct = statPlayed > 0 ? (statWins * 100 / statPlayed) : 0;
+    statsRow->addWidget(makeStat(QString::number(statPlayed), "Game\nDimainkan"));
+    statsRow->addWidget(makeStat(QString::number(winPct), "Menang %"));
+    statsRow->addWidget(makeStat(QString::number(statCurrentStreak), "Streak\nBertahan"));
+    statsRow->addWidget(makeStat(QString::number(statMaxStreak), "Streak\nTerpanjang"));
+    mainLayout->addLayout(statsRow);
+
+    QFrame *line = new QFrame;
+    line->setFrameShape(QFrame::HLine);
+    line->setStyleSheet("background-color: #3a3a3c; max-height: 1px;");
+    mainLayout->addWidget(line);
+
+    QLabel *distTitle = new QLabel("DISTRIBUSI TEBAKAN");
+    distTitle->setAlignment(Qt::AlignCenter);
+    distTitle->setStyleSheet("font-size: 14px; font-weight: bold;");
+    mainLayout->addWidget(distTitle);
+
+    int maxVal = 0;
+    for (int i = 0; i < 6; ++i)
+        if (statGuessDistribution[i] > maxVal) maxVal = statGuessDistribution[i];
+
+    QHBoxLayout *distRow = new QHBoxLayout();
+    distRow->setSpacing(10);
+
+    for (int i = 0; i < 6; ++i) {
+        QVBoxLayout *col = new QVBoxLayout();
+        col->setSpacing(4);
+        col->setAlignment(Qt::AlignHCenter);
+
+        QLabel *count = new QLabel(QString::number(statGuessDistribution[i]));
+        count->setAlignment(Qt::AlignCenter);
+        count->setFixedSize(40, 40);
+        count->setStyleSheet(
+            statGuessDistribution[i] > 0
+                ? "background-color: #3fa66b; color: white; font-size: 13px; font-weight: bold; border-radius: 6px;"
+                : "background-color: #3a3a3c; color: white; font-size: 13px; border-radius: 6px;"
+            );
+
+        QLabel *num = new QLabel(QString::number(i + 1));
+        num->setAlignment(Qt::AlignCenter);
+        num->setStyleSheet("color: white; font-size: 12px;");
+
+        col->addWidget(count);
+        col->addWidget(num);
+        distRow->addLayout(col);
+    }
+
+    mainLayout->addLayout(distRow);
+
+
+    QPushButton *btnExport = new QPushButton("Export Skor Sesi");
+    btnExport->setStyleSheet(
+        "QPushButton { background-color: #3a3a3c; color: white; border-radius: 8px; padding: 8px; }"
+        "QPushButton:hover { background-color: #4f8cff; }"
+        );
+
+    QPushButton *btnClose = new QPushButton("Tutup");
+    btnClose->setStyleSheet(
+        "QPushButton { background-color: #3a3a3c; color: white; border-radius: 8px; padding: 8px; }"
+        "QPushButton:hover { background-color: #4f8cff; }"
+        );
+    connect(btnClose, &QPushButton::clicked, &dialog, &QDialog::accept);
+
+    connect(btnExport, &QPushButton::clicked, [&]() {
+        btnExport->hide();
+        btnClose->hide();
+        QPixmap pixmap = dialog.grab();
+        btnExport->show();
+        btnClose->show();
+        QString fileName = QFileDialog::getSaveFileName(
+            &dialog,
+            "Simpan Skor",
+            QDir::homePath() + "/char4char_score.png",
+            "Images (*.png *.jpg)"
+            );
+        if (!fileName.isEmpty()) {
+            pixmap.save(fileName);
+        }
+    });
+
+    mainLayout->addWidget(btnExport);
+    mainLayout->addSpacing(6);
+    mainLayout->addWidget(btnClose);
+
+    dialog.exec();
+    setFocus();
 }

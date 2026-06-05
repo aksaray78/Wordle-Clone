@@ -30,6 +30,7 @@ private slots:
     void simpanNamaUser();
     void tampilkanTutorial();
     void tampilkanSettings();
+    void tampilkanStatistik();
 
 private:
     Ui::MainWindow *ui;
@@ -65,6 +66,12 @@ private:
 
     bool gameSudahMulai() const;
     void applyTheme();
+
+    int statPlayed = 0;
+    int statWins = 0;
+    int statCurrentStreak = 0;
+    int statMaxStreak = 0;
+    int statGuessDistribution[6] = {0, 0, 0, 0, 0, 0};
 };
 
 #endif // MAINWINDOW_H

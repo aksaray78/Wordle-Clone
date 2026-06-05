@@ -19,6 +19,9 @@ public:
     void colorCell(int col, const QString &colorHex);
     void moveToNextRow();
     void glowRowRed();
+    void createGrid();
+    void updateEmptyCells(const QString &textColor, const QString &borderColor);
+    void setThemeColors(const QString &textColor, const QString &borderColor);
 
 private:
     QGridLayout *gridLayout;
@@ -27,8 +30,10 @@ private:
     int wordLength = 5;
     int currentRow = 0;
     int currentCol = 0;
+    QString m_textColor = "white";
+    QString m_borderColor = "#3a3a3c";
 
-    void createGrid();
+
 };
 
 #endif
