@@ -1,7 +1,7 @@
-# Wordle-Clone
+# char4char
 Nama Kelompok : Kertas A4 
 
-Judul Projek : Wordle-Clone
+Judul Projek : char4char
 
 Anggota :  
 1. Aksa Prawira Sukma (251401080) 
