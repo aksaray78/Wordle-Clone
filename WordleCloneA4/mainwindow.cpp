@@ -881,11 +881,18 @@ void MainWindow::tampilkanStatistik()
     connect(btnClose, &QPushButton::clicked, &dialog, &QDialog::accept);
 
     connect(btnExport, &QPushButton::clicked, [&]() {
-        btnExport->hide();
-        btnClose->hide();
+        btnExport->setMaximumHeight(0);
+        btnClose->setMaximumHeight(0);
+        mainLayout->setSpacing(0);
+
+        QCoreApplication::processEvents();
+
         QPixmap pixmap = dialog.grab();
-        btnExport->show();
-        btnClose->show();
+
+        btnExport->setMaximumHeight(16777215);
+        btnClose->setMaximumHeight(16777215);
+        mainLayout->setSpacing(16);
+
         QString fileName = QFileDialog::getSaveFileName(
             &dialog,
             "Simpan Skor",
